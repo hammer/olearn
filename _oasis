@@ -1,0 +1,23 @@
+Name: ocopt
+Version: 0.1.0
+Synopsis: OCaml optimization library
+Authors: Jeff Hammerbacher <jeff.hammerbacher@gmail.com>
+License: LGPL with OCaml linking exception
+
+Description: OCaml optimization library
+Homepage: https://github.com/hammer/ocopt
+
+OASISFormat: 0.4
+BuildTools: ocamlbuild
+Plugins: META (0.4), DevFiles (0.4)
+
+Executable "ocopt"
+  Path: .
+  MainIs: ocopt.ml
+  CompiledObject: best
+  BuildDepends:
+    batteries
+
+
+
+
