@@ -11,13 +11,20 @@ OASISFormat: 0.4
 BuildTools: ocamlbuild
 Plugins: META (0.4), DevFiles (0.4)
 
-Executable "ocopt"
-  Path: .
-  MainIs: ocopt.ml
-  CompiledObject: best
+Library "ocopt"
+  Path: src/lib
+  FindLibName: ocopt
+  Modules: Ocopt
   BuildDepends:
     batteries
 
-
-
-
+Executable "test_ocopt"
+  Path: src/test
+  Build$: flag(tests)
+  Install: false
+  MainIs: test_ocopt.ml
+  CompiledObject: best
+  BuildDepends:
+    ocopt,
+    batteries,
+    oUnit
