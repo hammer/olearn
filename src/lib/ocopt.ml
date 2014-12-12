@@ -9,6 +9,7 @@ type model = {
 }
 
 type hyperparameters = {
+  epochs : int;
   learning_rate : float;
 }
 
@@ -29,16 +30,28 @@ let print_samples ss =
 let print_models ms =
   List.iter (fun m -> Printf.printf "theta: %f beta: %f\n" m.theta m.beta) ms
 
-(* Parameter update *)
-let score m x =
+let r2_score y y_hat =
+  1.0
+
+let predict m x =
   m.theta *. x +. m.beta
 
 let step_parameters m s h =
-  let y_hat = score m s.x in
+  let y_hat = predict m s.x in
   { theta = m.theta -. h.learning_rate *. (y_hat -. s.y) *. s.x;
     beta = m.beta -. h.learning_rate *. (y_hat -. s.y)
   }
 
-let single_pass m_0 samples h =
+let single_pass m samples h =
   let f ms s = (step_parameters (List.hd ms) s h) :: ms in
-  Array.fold_left f m_0 samples
+  Array.fold_left f m samples
+
+let fit_regressor samples h =
+  let m = { theta = 0.0; beta = 0.0; } in
+  let ms = Array.make (h.epochs + 1) [] in
+  ms.(0) <- [m];
+  let shuffled_samples = shuffle samples in
+  for i = 1 to h.epochs do
+    ms.(i) <- single_pass ms.(i-1) shuffled_samples h
+  done;
+  ms

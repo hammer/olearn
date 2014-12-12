@@ -16,7 +16,6 @@ Library "ocopt"
   FindLibName: ocopt
   Modules: Ocopt
   BuildDepends:
-    batteries
 
 Executable "test_ocopt"
   Path: src/test
@@ -26,5 +25,4 @@ Executable "test_ocopt"
   CompiledObject: best
   BuildDepends:
     ocopt,
-    batteries,
     oUnit

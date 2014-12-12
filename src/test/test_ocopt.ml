@@ -3,27 +3,25 @@ open Ocopt
 
 let test_score test_ctxt =
   let m = { theta = 1.0; beta = 1.0; } in
-  assert_equal 2.0 (Ocopt.score m 1.0)
+  assert_equal 2.0 (predict m 1.0)
 
-(* Simple regression example from http://stattrek.com/regression/regression-example.aspx *)
 (* TODO(hammer): make this into a test *)
-let test_two_passes test_ctxt =
-  let initial_model = { theta = 0.6; beta = 25. } in
-  let initial_hyperparameters = { learning_rate = 0.0001 } in
-  let x = BatArray.enum [|95.; 85.; 80.; 70.; 60.|] in
-  let y = BatArray.enum [|85.; 95.; 70.; 65.; 70.|] in
+let test_simple_regression test_ctxt =
+  let h = { learning_rate = 0.01; epochs = 20; } in
+  let x = Array.init 100 (fun _ -> 5.0 -. Random.float 10.0) in
+  let y = Array.init 100 (fun i -> 0.5 *. x.(i)) in
   let make_sample (x, y) = { x = x; y = y } in
-  let samples = BatArray.of_enum (BatEnum.map make_sample (BatEnum.combine (x, y))) in
-  let m_0 = initial_model in
-  let h_0 = initial_hyperparameters in
-  let shuffled_samples = shuffle samples in
-  let iter_1 = single_pass [m_0] shuffled_samples h_0 in
-  let iter_2 = single_pass iter_1 shuffled_samples h_0 in
-  iter_2
+  let samples = Array.init 100 (fun i -> make_sample (x.(i), y.(i))) in
+  let ms = fit_regressor samples h in
+  let fitted_model = List.hd ms.(h.epochs) in
+  let y_hat = Array.init 100 (fun i -> predict fitted_model x.(i)) in
+  let score = r2_score y y_hat in
+  assert_bool "Bad model quality" (score > 0.99)
 
 let suite =
   "suite" >:::
     [ "test_score" >:: test_score;
+      "test_simple_regression" >:: test_score;
     ]
 
 let () =
