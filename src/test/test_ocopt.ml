@@ -5,7 +5,6 @@ let test_score test_ctxt =
   let m = { theta = 1.0; beta = 1.0; } in
   assert_equal 2.0 (predict m 1.0)
 
-(* TODO(hammer): make this into a test *)
 let test_simple_regression test_ctxt =
   let h = { learning_rate = 0.01; epochs = 20; } in
   let x = Array.init 100 (fun _ -> 5.0 -. Random.float 10.0) in

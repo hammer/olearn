@@ -30,8 +30,18 @@ let print_samples ss =
 let print_models ms =
   List.iter (fun m -> Printf.printf "theta: %f beta: %f\n" m.theta m.beta) ms
 
+(* TODO(hammer): verify these arrays have the same length *)
 let r2_score y y_hat =
-  1.0
+  let y_len = Array.length y in
+  let diff_sq = Array.init y_len (fun i -> (y.(i) -. y_hat.(i)) ** 2.) in
+  let numerator = Array.fold_left (fun x y -> x +. y) 0. diff_sq in
+  let y_avg = (Array.fold_left (fun x y -> x +. y) 0. y) /. (float y_len) in
+  let y_spread_sq = Array.init y_len (fun i -> (y.(i) -. y_avg) ** 2.) in
+  let denominator = Array.fold_left (fun x y -> x +. y) 0. y_spread_sq in
+  match () with
+  | () when denominator = 0.0 && numerator = 0.0 -> 1.0
+  | () when denominator = 0.0 -> 0.0
+  | () -> 1. -. numerator /. denominator
 
 let predict m x =
   m.theta *. x +. m.beta
