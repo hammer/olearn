@@ -38,10 +38,10 @@ let r2_score y y_hat =
   let y_avg = (Array.fold_left (fun x y -> x +. y) 0. y) /. (float y_len) in
   let y_spread_sq = Array.init y_len (fun i -> (y.(i) -. y_avg) ** 2.) in
   let denominator = Array.fold_left (fun x y -> x +. y) 0. y_spread_sq in
-  match () with
-  | () when denominator = 0.0 && numerator = 0.0 -> 1.0
-  | () when denominator = 0.0 -> 0.0
-  | () -> 1. -. numerator /. denominator
+  match numerator, denominator with
+  | 0.0, 0.0 -> 1.0
+  | _, 0.0 -> 0.0
+  | _, _ -> 1. -. numerator /. denominator
 
 let predict m x =
   m.theta *. x +. m.beta
