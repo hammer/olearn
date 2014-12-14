@@ -1,28 +1,28 @@
-Name: ocopt
+Name: olearn
 Version: 0.1.0
-Synopsis: OCaml optimization library
+Synopsis: OCaml machine learning library
 Authors: Jeff Hammerbacher <jeff.hammerbacher@gmail.com>
 License: LGPL with OCaml linking exception
 
-Description: OCaml optimization library
-Homepage: https://github.com/hammer/ocopt
+Description: OCaml machine learning library
+Homepage: https://github.com/hammer/olearn
 
 OASISFormat: 0.4
 BuildTools: ocamlbuild
 Plugins: META (0.4), DevFiles (0.4)
 
-Library "ocopt"
+Library "olearn"
   Path: src/lib
-  FindLibName: ocopt
-  Modules: Ocopt
+  FindLibName: olearn
+  Modules: Olearn
   BuildDepends:
 
-Executable "test_ocopt"
+Executable "test_olearn"
   Path: src/test
   Build$: flag(tests)
   Install: false
-  MainIs: test_ocopt.ml
+  MainIs: test_olearn.ml
   CompiledObject: best
   BuildDepends:
-    ocopt,
+    olearn,
     oUnit

@@ -13,7 +13,7 @@
  * limitations under the License.
  *)
 open OUnit2
-open Ocopt
+open Olearn
 
 let test_score test_ctxt =
   let m = { theta = 1.0; beta = 1.0; } in

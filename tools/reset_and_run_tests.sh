@@ -3,4 +3,4 @@
 ./tools/oasis_gen.sh
 ./configure --enable-tests
 make
-./test_ocopt.native
+./test_olearn.native
