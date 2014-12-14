@@ -30,11 +30,11 @@ type hyperparameters = {
 (* Thanks, batteries (and Fisher-Yates) *)
 let shuffle a =
   for n = Array.length a - 1 downto 1 do
-    let k    = Random.int ( n + 1 ) in
+    let k = Random.int (n + 1) in
     if k <> n then
-      let buf  = Array.get a n in
-      Array.set a n (Array.get a k);
-      Array.set a k buf
+      let buf = a.(n) in
+      a.(n) <- a.(k);
+      a.(k) <- buf
   done;
   a
 
