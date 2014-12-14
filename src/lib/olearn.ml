@@ -54,8 +54,7 @@ let print_models ms =
 
 (* TODO(hammer): verify these arrays have the same length *)
 let r2_score ys y_hats =
-  let pairs = BatEnum.combine ((BatArray.enum ys), (BatArray.enum y_hats)) in
-  let diff_sq = BatArray.of_enum (BatEnum.map (fun (x, y) -> (x -. y) ** 2.) pairs) in
+  let diff_sq = BatArray.map2 (fun y y_hat -> (y -. y_hat) ** 2.) ys y_hats in
   let numerator = BatArray.fsum diff_sq in
   let y_avg = BatArray.favg ys in
   let y_spread_sq = BatArray.mapi (fun i y -> (y -. y_avg) ** 2.) ys in
