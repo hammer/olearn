@@ -46,12 +46,6 @@ let shuffle a =
   done;
   a
 
-let print_samples ss =
-  Array.iter (fun s -> Printf.printf "x: %f y: %f\n" s.x s.y) ss
-
-let print_models ms =
-  List.iter (fun m -> Printf.printf "theta: %f beta: %f\n" m.theta m.beta) ms
-
 (* TODO(hammer): verify these arrays have the same length *)
 let r2_score ys y_hats =
   let diff_sq = BatArray.map2 (fun y y_hat -> (y -. y_hat) ** 2.) ys y_hats in
@@ -71,9 +65,11 @@ let step_parameters epoch_state s =
   let m = epoch_state.m in
   let h = epoch_state.h in
   let y_hat = predict m s.x in
+  let new_theta = m.theta -. h.learning_rate *. (y_hat -. s.y) *. s.x in
+  let new_beta = m.beta -. h.learning_rate *. (y_hat -. s.y) in
   {
-    m = { theta = m.theta -. h.learning_rate *. (y_hat -. s.y) *. s.x;
-          beta = m.beta -. h.learning_rate *. (y_hat -. s.y)
+    m = { theta = new_theta;
+          beta = new_beta;
         };
     h = h;
   }
