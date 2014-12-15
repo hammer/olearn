@@ -12,28 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *)
-type sample = {
-  x : float;
-  y : float;
-}
-
-type model = {
-  theta : float;
-  beta  : float;
-}
-
-type hyperparameters = {
-  epochs : int;
-  learning_rate : float;
-}
-
-type epoch_state = {
-  m : model;
-  h : hyperparameters;
-}
-
+type sample = { x : float; y : float; }
+type model = { theta : float; beta : float; }
+type hyperparameters = { epochs : int; learning_rate : float; }
+type epoch_state = { m : model; h : hyperparameters; }
 type fits = epoch_state list
-
 
 (* Thanks, batteries (and Fisher-Yates) *)
 let shuffle a =
