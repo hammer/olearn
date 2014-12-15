@@ -8,6 +8,6 @@ val shuffle : 'a array -> 'a array
 val r2_score : float array -> float array -> float
 val predict : model -> float -> float
 val step_parameters : epoch_state -> sample -> epoch_state
-val single_pass : epoch_state list -> sample array -> epoch_state list
-val all_passes : int -> epoch_state list -> sample array -> epoch_state list
-val fit_regressor : sample array -> hyperparameters -> epoch_state list
+val single_pass : fits -> sample array -> fits
+val all_passes : int -> fits -> sample array -> fits
+val fit_regressor : sample array -> hyperparameters -> fits
