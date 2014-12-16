@@ -20,12 +20,15 @@ let test_predict test_ctxt =
   assert_equal 2.0 (predict m 1.0)
 
 let test_simple_regression test_ctxt =
-  let h = { learning_rate = 0.01; epochs = 20; } in
+  let epoch_0 = {
+      h = { learning_rate = 0.01; epochs = 20; };
+      m = { theta = 0.; beta = 0.; }
+  } in
   let xs = Array.init 100 (fun _ -> 5.0 -. Random.float 10.0) in
   let ys = Array.map (fun x -> 0.5 *. x) xs in
   let make_sample x y = { x = x; y = y } in
   let samples = BatArray.map2 make_sample xs ys in
-  let fits = fit_regressor samples h in
+  let fits = fit_regressor epoch_0 samples in
   let fitted_model = (List.hd fits).m in
   let y_hats = Array.map (fun x -> predict fitted_model x) xs in
   let score = r2_score ys y_hats in

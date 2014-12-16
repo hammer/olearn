@@ -12,10 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *)
-type sample = { x : float; y : float; }
+type input = float
+type inputs = input array
+type output = float
+type outputs = output array
+type predicted_output = output
+type predicted_outputs = predicted_output array
+type num_epochs = int
+type r2_score = float
+
+type sample = { x : input; y : output; }
 type model = { theta : float; beta : float; }
-type hyperparameters = { epochs : int; learning_rate : float; }
+type hyperparameters = { epochs : num_epochs; learning_rate : float; }
 type epoch_state = { m : model; h : hyperparameters; }
+type samples = sample array
 type fits = epoch_state list
 
 (* Thanks, batteries (and Fisher-Yates) *)
@@ -44,7 +54,7 @@ let r2_score ys y_hats =
 let predict m x =
   m.theta *. x +. m.beta
 
-let step_parameters epoch_state s =
+let fit_sample epoch_state s =
   let m = epoch_state.m in
   let h = epoch_state.h in
   let y_hat = predict m s.x in
@@ -57,17 +67,15 @@ let step_parameters epoch_state s =
     h = h;
   }
 
-let single_pass fits samples =
-  let f fits s = (step_parameters (List.hd fits) s) :: fits in
+let fit_epoch fits samples =
+  let f fits s = (fit_sample (List.hd fits) s) :: fits in
   Array.fold_left f fits samples
 
-let rec all_passes remaining_epochs fits samples =
+let rec fit_epochs remaining_epochs fits samples =
   match remaining_epochs with
   | 0 -> fits
-  | _ -> all_passes (remaining_epochs - 1) (single_pass fits samples) samples
+  | _ -> fit_epochs (remaining_epochs - 1) (fit_epoch fits samples) samples
 
-let fit_regressor samples h =
-  let m = { theta = 0.0; beta = 0.0; } in
-  let epoch_0 = { m = m; h = h } in
+let fit_regressor epoch_0 samples =
   let shuffled_samples = shuffle samples in
-  all_passes h.epochs [epoch_0] shuffled_samples
+  fit_epochs epoch_0.h.epochs [epoch_0] shuffled_samples
