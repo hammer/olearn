@@ -44,7 +44,7 @@ let r2_score ys y_hats =
   let diff_sq = BatArray.map2 (fun y y_hat -> (y -. y_hat) ** 2.) ys y_hats in
   let numerator = BatArray.fsum diff_sq in
   let y_avg = BatArray.favg ys in
-  let y_spread_sq = BatArray.mapi (fun i y -> (y -. y_avg) ** 2.) ys in
+  let y_spread_sq = BatArray.map (fun y -> (y -. y_avg) ** 2.) ys in
   let denominator = BatArray.fsum y_spread_sq in
   match numerator, denominator with
   | 0.0, 0.0 -> 1.0
