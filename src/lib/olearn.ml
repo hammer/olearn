@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *)
-type input = float
+type input = float array
 type inputs = input array
 type output = float
 type outputs = output array
@@ -22,7 +22,7 @@ type num_epochs = int
 type r2_score = float
 
 type sample = { x : input; y : output; }
-type model = { theta : float; beta : float; }
+type model = { theta : float array; beta : float; }
 type hyperparameters = { epochs : num_epochs; learning_rate : float; }
 type epoch_state = { m : model; h : hyperparameters; }
 type samples = sample array
@@ -52,13 +52,14 @@ let r2_score ys y_hats =
   | _, _ -> 1. -. numerator /. denominator
 
 let predict m x =
-  m.theta *. x +. m.beta
+  BatArray.fsum (BatArray.map2 (fun theta x -> theta *. x) m.theta x) +. m.beta
 
 let fit_sample epoch_state s =
   let m = epoch_state.m in
   let h = epoch_state.h in
   let y_hat = predict m s.x in
-  let new_theta = m.theta -. h.learning_rate *. (y_hat -. s.y) *. s.x in
+  let theta_update theta x = theta -. h.learning_rate *. (y_hat -. s.y) *. x in
+  let new_theta = BatArray.map2 theta_update m.theta s.x in
   let new_beta = m.beta -. h.learning_rate *. (y_hat -. s.y) in
   {
     m = { theta = new_theta;

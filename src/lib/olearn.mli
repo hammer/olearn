@@ -1,4 +1,4 @@
-type input = float
+type input = float array
 type inputs = input array
 type output = float
 type outputs = output array
@@ -8,7 +8,7 @@ type num_epochs = int
 type r2_score = float
 
 type sample = { x : input; y : output; }
-type model = { theta : float; beta : float; }
+type model = { theta : float array; beta : float; }
 type hyperparameters = { epochs : num_epochs; learning_rate : float; }
 type epoch_state = { m : model; h : hyperparameters; }
 type samples = sample array

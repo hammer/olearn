@@ -15,29 +15,58 @@
 open OUnit2
 open Olearn
 
+let get_rand l r =
+  let spread = r -. l in
+  r -. Random.float spread
+
 let test_predict test_ctxt =
-  let m = { theta = 1.0; beta = 1.0; } in
-  assert_equal 2.0 (predict m 1.0)
+  let m = { theta = [| 1.0 |]; beta = 1.0; } in
+  assert_equal 2.0 (predict m [| 1.0 |])
 
 let test_simple_regression test_ctxt =
   let epoch_0 = {
       h = { learning_rate = 0.01; epochs = 20; };
-      m = { theta = 0.; beta = 0.; }
+      m = { theta = [| 0. |]; beta = 0.; }
   } in
-  let xs = Array.init 100 (fun _ -> 5.0 -. Random.float 10.0) in
-  let ys = Array.map (fun x -> 0.5 *. x) xs in
+  let xs = Array.init 100 (fun _ -> [| (get_rand (-5.) 5.) |]) in
+  let ys = Array.map (fun x -> 0.5 *. x.(0) +. get_rand 0. 1.) xs in
   let make_sample x y = { x = x; y = y } in
   let samples = BatArray.map2 make_sample xs ys in
   let fits = fit_regressor epoch_0 samples in
-  let fitted_model = (List.hd fits).m in
-  let y_hats = Array.map (fun x -> predict fitted_model x) xs in
+  let m_hat = (List.hd fits).m in
+  let y_hats = Array.map (fun x -> predict m_hat x) xs in
   let score = r2_score ys y_hats in
-  assert_bool "Bad model quality" (score > 0.99)
+  assert_bool "Bad model quality" (score > 0.95)
+
+let test_multivariate_regression test_ctxt =
+  let epoch_0 = {
+      h = { learning_rate = 0.01; epochs = 20; };
+      m = { theta = [| 0.; 0.; 0.; 0.; 0. |]; beta = 0.; }
+  } in
+  let xs = Array.init 100 (fun _ -> [| get_rand (-5.) 5.;
+                                       get_rand (-5.) 5.;
+                                       get_rand (-5.) 5.;
+                                       get_rand (-5.) 5.;
+                                       get_rand (-5.) 5.; |]) in
+  let ys = Array.map (fun x -> 0.5 *. x.(0) +.
+                               0.3 *. x.(1) +.
+                               0.7 *. x.(2) +.
+                               0.1 *. x.(3) +.
+                               0.9 *. x.(4) +.
+                               get_rand 0. 1.) xs in
+  let make_sample x y = { x = x; y = y } in
+  let samples = BatArray.map2 make_sample xs ys in
+  let fits = fit_regressor epoch_0 samples in
+  let m_hat = (List.hd fits).m in
+  let y_hats = Array.map (fun x -> predict m_hat x) xs in
+  let score = r2_score ys y_hats in
+  assert_bool "Bad model quality" (score > 0.95)
 
 let suite =
   "suite" >:::
     [ "test_predict" >:: test_predict;
       "test_simple_regression" >:: test_simple_regression;
+      "test_multivariate_regression" >:: test_multivariate_regression;
     ]
 
 let () =
