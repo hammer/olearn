@@ -22,10 +22,17 @@ type predicted_output = output
 type predicted_outputs = Lacaml_float64.vec
 type num_epochs = int
 type r2_score = float
+type eta_schedule = Constant | Inverse_scaling
 
 type sample = { x : input; y : output; }
 type model = { theta : Lacaml_float64.vec; }
-type hyperparameters = { epochs : num_epochs; eta : float; }
+type hyperparameters = {
+    epochs : num_epochs;
+    eta : float;
+    eta_schedule : eta_schedule;
+    power_t : float;
+    time_steps : int;
+  }
 type epoch_state = { m : model; h : hyperparameters; }
 type samples = sample array
 type fits = epoch_state list
@@ -61,9 +68,12 @@ let fit_sample epoch_state s =
   let step = h.eta *. (y_hat -. s.y) in
   let grad = Vec.mul (Vec.make (Vec.dim s.x) step) s.x in
   let new_theta = Vec.sub m.theta grad in
+  let new_eta = match h.eta_schedule with
+  | Inverse_scaling -> ((float (h.time_steps) /. float (h.time_steps + 1)) ** h.power_t) *. h.eta
+  | Constant -> h.eta in
   {
     m = { theta = new_theta; };
-    h = h;
+    h = { h with eta = new_eta; time_steps = h.time_steps + 1; }
   }
 
 let fit_epoch fits samples =

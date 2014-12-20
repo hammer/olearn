@@ -8,10 +8,17 @@ type predicted_output = output
 type predicted_outputs = Lacaml_float64.vec
 type num_epochs = int
 type r2_score = float
+type eta_schedule = Constant | Inverse_scaling
 
 type sample = { x : input; y : output; }
 type model = { theta : Lacaml_float64.vec; }
-type hyperparameters = { epochs : num_epochs; eta : float; }
+type hyperparameters = {
+    epochs : num_epochs;
+    eta : float;
+    eta_schedule : eta_schedule;
+    power_t : float;
+    time_steps : int;
+  }
 type epoch_state = { m : model; h : hyperparameters; }
 type samples = sample array
 type fits = epoch_state list
