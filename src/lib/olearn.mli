@@ -1,15 +1,17 @@
-type input = float array
-type inputs = input array
+open Lacaml.D
+
+type input = Lacaml_float64.vec
+type inputs = Lacaml_float64.mat
 type output = float
-type outputs = output array
+type outputs = Lacaml_float64.vec
 type predicted_output = output
-type predicted_outputs = predicted_output array
+type predicted_outputs = Lacaml_float64.vec
 type num_epochs = int
 type r2_score = float
 
 type sample = { x : input; y : output; }
-type model = { theta : float array; beta : float; }
-type hyperparameters = { epochs : num_epochs; learning_rate : float; }
+type model = { theta : Lacaml_float64.vec; }
+type hyperparameters = { epochs : num_epochs; eta : float; }
 type epoch_state = { m : model; h : hyperparameters; }
 type samples = sample array
 type fits = epoch_state list

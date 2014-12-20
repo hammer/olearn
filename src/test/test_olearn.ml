@@ -14,53 +14,38 @@
  *)
 open OUnit2
 open Olearn
-
-let get_rand l r =
-  let spread = r -. l in
-  r -. Random.float spread
+open Lacaml.D
 
 let test_predict test_ctxt =
-  let m = { theta = [| 1.0 |]; beta = 1.0; } in
-  assert_equal 2.0 (predict m [| 1.0 |])
+  let m = { theta = Vec.make 2 1.; } in
+  assert_equal 2. (predict m (Vec.make 2 1.))
 
-let test_simple_regression test_ctxt =
+let test_regression test_ctxt =
+  let num_features = 20 in
+  let num_samples = 1000 in
   let epoch_0 = {
-      h = { learning_rate = 0.01; epochs = 20; };
-      m = { theta = [| 0. |]; beta = 0.; }
+      h = { eta = 0.01; epochs = 20; };
+      m = { theta = Vec.make0 num_features; }
   } in
-  let xs = Array.init 100 (fun _ -> [| (get_rand (-5.) 5.) |]) in
-  let ys = Array.map (fun x -> 0.5 *. x.(0) +. get_rand 0. 1.) xs in
+  let m_true = { theta = Vec.make num_features 0.5; } in
+  let rnd_state = Random.State.make_self_init () in
+  let xs = Mat.random ~rnd_state:rnd_state ~from:(-5.) ~range:10. num_features num_samples in
+  let xs_as_cols = Mat.to_col_vecs xs in
+  let noise = Vec.random ~from:(-0.5) ~range:1. num_samples in
+  let ys_no_noise = Vec.of_array (Array.map (predict m_true) xs_as_cols) in
+  let ys = Vec.add ys_no_noise noise in
   let make_sample x y = { x = x; y = y } in
-  let samples = BatArray.map2 make_sample xs ys in
+  let samples = BatArray.map2 make_sample xs_as_cols (Vec.to_array ys) in
   let fits = fit_regressor epoch_0 samples in
   let m_hat = (List.hd fits).m in
-  let y_hats = Array.map (fun x -> predict m_hat x) xs in
+  let y_hats = Vec.of_array (Array.map (predict m_hat) xs_as_cols) in
   let score = r2_score ys y_hats in
-  assert_bool "Bad model quality" (score > 0.95)
-
-let test_multivariate_regression test_ctxt =
-  let num_features = 10 in
-  let epoch_0 = {
-      h = { learning_rate = 0.01; epochs = 20; };
-      m = { theta = Array.make num_features 0.; beta = 0.; }
-  } in
-  let xs = Array.init 100 (fun _ -> Array.init num_features (fun _ -> get_rand (-5.) 5.)) in
-  let theta = Array.init num_features (fun _ -> get_rand 0.1 0.9) in
-  let y x = BatArray.fsum ((BatArray.map2 (fun a b -> a *. b) theta x)) +. get_rand 0. 1. in
-  let ys = Array.map y xs in
-  let make_sample x y = { x = x; y = y } in
-  let samples = BatArray.map2 make_sample xs ys in
-  let fits = fit_regressor epoch_0 samples in
-  let m_hat = (List.hd fits).m in
-  let y_hats = Array.map (fun x -> predict m_hat x) xs in
-  let score = r2_score ys y_hats in
-  assert_bool "Bad model quality" (score > 0.95)
+  assert_bool "Bad model quality" (score > 0.97)
 
 let suite =
   "suite" >:::
     [ "test_predict" >:: test_predict;
-      "test_simple_regression" >:: test_simple_regression;
-      "test_multivariate_regression" >:: test_multivariate_regression;
+      "test_regression" >:: test_regression;
     ]
 
 let () =

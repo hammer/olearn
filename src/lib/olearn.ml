@@ -12,18 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *)
-type input = float array
-type inputs = input array
+open Lacaml.D
+
+type input = Lacaml_float64.vec
+type inputs = Lacaml_float64.mat
 type output = float
-type outputs = output array
+type outputs = Lacaml_float64.vec
 type predicted_output = output
-type predicted_outputs = predicted_output array
+type predicted_outputs = Lacaml_float64.vec
 type num_epochs = int
 type r2_score = float
 
 type sample = { x : input; y : output; }
-type model = { theta : float array; beta : float; }
-type hyperparameters = { epochs : num_epochs; learning_rate : float; }
+type model = { theta : Lacaml_float64.vec; }
+type hyperparameters = { epochs : num_epochs; eta : float; }
 type epoch_state = { m : model; h : hyperparameters; }
 type samples = sample array
 type fits = epoch_state list
@@ -41,30 +43,26 @@ let shuffle a =
 
 (* TODO(hammer): verify these arrays have the same length *)
 let r2_score ys y_hats =
-  let diff_sq = BatArray.map2 (fun y y_hat -> (y -. y_hat) ** 2.) ys y_hats in
-  let numerator = BatArray.fsum diff_sq in
-  let y_avg = BatArray.favg ys in
-  let y_spread_sq = BatArray.map (fun y -> (y -. y_avg) ** 2.) ys in
-  let denominator = BatArray.fsum y_spread_sq in
+  let numerator = Vec.ssqr_diff ys y_hats in
+  let y_avg = Vec.sum ys /. float (Vec.dim ys) in
+  let denominator = Vec.ssqr ~c:y_avg ys in
   match numerator, denominator with
-  | 0.0, 0.0 -> 1.0
-  | _, 0.0 -> 0.0
+  | 0., 0. -> 1.
+  | _, 0. -> 0.
   | _, _ -> 1. -. numerator /. denominator
 
 let predict m x =
-  BatArray.fsum (BatArray.map2 (fun theta x -> theta *. x) m.theta x) +. m.beta
+  dot m.theta x
 
 let fit_sample epoch_state s =
   let m = epoch_state.m in
   let h = epoch_state.h in
   let y_hat = predict m s.x in
-  let theta_update theta x = theta -. h.learning_rate *. (y_hat -. s.y) *. x in
-  let new_theta = BatArray.map2 theta_update m.theta s.x in
-  let new_beta = m.beta -. h.learning_rate *. (y_hat -. s.y) in
+  let step = h.eta *. (y_hat -. s.y) in
+  let grad = Vec.mul (Vec.make (Vec.dim s.x) step) s.x in
+  let new_theta = Vec.sub m.theta grad in
   {
-    m = { theta = new_theta;
-          beta = new_beta;
-        };
+    m = { theta = new_theta; };
     h = h;
   }
 

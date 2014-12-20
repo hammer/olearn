@@ -16,7 +16,7 @@ Library "olearn"
   FindLibName: olearn
   Modules: Olearn
   BuildDepends:
-    batteries
+    lacaml
 
 Executable "test_olearn"
   Path: src/test
@@ -27,4 +27,5 @@ Executable "test_olearn"
   BuildDepends:
     olearn,
     batteries,
-    oUnit
+    oUnit,
+    lacaml
