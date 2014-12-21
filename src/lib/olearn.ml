@@ -23,6 +23,7 @@ type predicted_outputs = Lacaml_float64.vec
 type num_epochs = int
 type r2_score = float
 type eta_schedule = Constant | Inverse_scaling
+type regularization = No_regularization | L2
 
 type sample = { x : input; y : output; }
 type model = { theta : Lacaml_float64.vec; }
@@ -31,6 +32,8 @@ type hyperparameters = {
     eta : float;
     eta_schedule : eta_schedule;
     power_t : float;
+    lambda : float;
+    regularization : regularization;
     time_steps : int;
   }
 type epoch_state = { m : model; h : hyperparameters; }
@@ -66,8 +69,11 @@ let fit_sample epoch_state s =
   let h = epoch_state.h in
   let y_hat = predict m s.x in
   let step = h.eta *. (y_hat -. s.y) in
-  let grad = Vec.mul (Vec.make (Vec.dim s.x) step) s.x in
-  let new_theta = Vec.sub m.theta grad in
+  let dloss = Vec.mul (Vec.make (Vec.dim s.x) step) s.x in
+  let rloss = match h.regularization with
+  | L2 -> Vec.mul (Vec.make (Vec.dim m.theta) (h.eta *. h.lambda)) m.theta
+  | No_regularization -> Vec.make0 (Vec.dim m.theta) in
+  let new_theta = Vec.sub (Vec.sub m.theta dloss) rloss in
   let new_eta = match h.eta_schedule with
   | Inverse_scaling -> ((float (h.time_steps) /. float (h.time_steps + 1)) ** h.power_t) *. h.eta
   | Constant -> h.eta in
